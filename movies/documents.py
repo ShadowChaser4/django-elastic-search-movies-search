@@ -29,6 +29,13 @@ class MovieDocument(Document):
             'last_name': fields.TextField(),
         }
     )
+    
+    name = fields.TextField(
+        fields = {
+            'raw': fields.TextField(analyzer = 'keyword')
+        }
+    )
+    description = fields.TextField()
     class Index: 
         name = 'movies'
         settings = { 
@@ -37,7 +44,6 @@ class MovieDocument(Document):
                     }
     class Django: 
         model = Movie
-        fields = [  'name','release_date'] 
         related_models = [Artist, ]
         
     def get_instances_from_related(self, related_instance): 

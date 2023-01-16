@@ -1,23 +1,36 @@
 from django.shortcuts import render
-
 # Create your views here.
-from django_elasticsearch_dsl_drf.constants import *
-from django_elasticsearch_dsl_drf.filter_backends import * 
-from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet
-from django_elasticsearch_dsl_drf.pagination import PageNumberPagination
 
 from .documents import MovieDocument , ArtistDocument
 from .seralizer import MovieSeralizer, ArtistSeralizer
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from elasticsearch_dsl import Q
 
-class MovieDocumentViewSet(BaseDocumentViewSet): 
-    """ The base document viewset """
+class MovieSearchView(APIView): 
+    seralizer_class = MovieSeralizer
+    document_class = MovieDocument
     
-    document = MovieDocument
-    serializer_class = MovieSeralizer
-    pagination_class  = PageNumberPagination
-    search_fields = {
-        'name', 
-        'release_date', 
-        'actors'
-    }    
-    ordering = ('release_date' , 'name')
+    def generate_q_expression(self, query): 
+        return Q(
+            'bool', 
+            should = [
+                Q('match', name =  query), 
+                Q('nested', path = 'actors', 
+                  query = Q('match', actors__first_name = query)
+                )
+            ]
+        )
+    
+    def get(self, request): 
+        query = request.GET.get('query')
+        q = self.generate_q_expression(query)
+        search = self.document_class.search().query(q)
+        
+        res = search.execute()
+        
+        seralizer = self.seralizer_class(res, many = True)
+        
+        return Response(data= seralizer.data )
+        
+    

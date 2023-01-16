@@ -1,14 +1,11 @@
 
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import MovieDocumentViewSet
+from .views import MovieSearchView
 
 
-router = DefaultRouter()
-movies = router.register(r'movies', MovieDocumentViewSet, basename= 'moviedocument')
 
 urlpatterns = [
-     path(r'', include(router.urls)),
+   path('movies/', MovieSearchView.as_view())
 ]
 
 
