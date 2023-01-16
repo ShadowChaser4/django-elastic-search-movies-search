@@ -15,15 +15,15 @@ class MovieSearchView(APIView):
         return Q(
             'bool', 
             should = [
-                Q('match', name =  query), 
+                Q('match',  name={'query': query, 'fuzziness': 2}), 
                 Q('nested', path = 'actors', 
-                  query = Q('match', actors__first_name = query)
+                  query = Q('match', actors__first_name = {'query': query, 'fuzziness': 2})
                 )
             ]
         )
     
     def get(self, request): 
-        query = request.GET.get('query')
+        query = request.GET.get('query', '')
         q = self.generate_q_expression(query)
         search = self.document_class.search().query(q)
         
