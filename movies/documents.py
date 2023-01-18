@@ -1,12 +1,35 @@
-from django_elasticsearch_dsl import Document, fields
+from django_elasticsearch_dsl import Document, fields 
+from elasticsearch_dsl import analyzer
 from django_elasticsearch_dsl.registries import registry 
 from .models import Movie, Artist
 
+autocomplete_analyzer = analyzer(
+    'autocomplete', 
+    tokenizer = 'standard', 
+    filter  = ['lowercase', 'edge_ngram'],
+    type = 'custom', 
+    filter_settings = {
+        'edge_ngram': {
+            'type': 'edgeNGram', 
+            'min_gram': 1, 
+            'max_gram': 20
+        }
+    }
+)
 
 
 
 @registry.register_document 
 class ArtistDocument(Document): 
+    first_name = fields.TextField(
+        analyzer = autocomplete_analyzer
+    )
+    middle_name = fields.TextField(
+        analyzer = autocomplete_analyzer
+    )
+    last_name = fields.TextField(
+        analyzer = autocomplete_analyzer
+    )
     class Index: 
         name = 'artist'
         settings = {
@@ -15,10 +38,6 @@ class ArtistDocument(Document):
         }
     class Django: 
         model = Artist
-        fields = [ 
-                    'first_name', 
-                    'middle_name', 
-                    'last_name']
 
 @registry.register_document 
 class MovieDocument(Document): 
@@ -27,7 +46,7 @@ class MovieDocument(Document):
             'first_name': fields.TextField(), 
             'middle_name': fields.TextField(), 
             'last_name': fields.TextField(),
-        }
+            }
     )
     
     name = fields.TextField(
