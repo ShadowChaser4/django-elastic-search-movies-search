@@ -40,7 +40,7 @@ class ActorsAutoCompleteSerach(APIView):
     def generate_q_expression(self, query): 
         return Q('bool', 
                  should = [
-          Q('match', last_name = {'query': query}),
+          Q('match', last_name = query),
           Q('match', first_name = query)
                  ]
         )

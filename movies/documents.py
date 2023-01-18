@@ -12,7 +12,7 @@ autocomplete_analyzer = analyzer(
         'edge_ngram': {
             'type': 'edgeNGram', 
             'min_gram': 1, 
-            'max_gram': 20
+            'max_gram': 10
         }
     }
 )
